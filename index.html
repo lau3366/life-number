@@ -309,8 +309,9 @@ function calc(d1,d2,m1,m2,c1,c2,y1,y2){
 }
 
 /* chart layout, coordinates follow the original Excel drawing */
-// top row evenly spaced (160 apart, mirrored on the centre line), second row centred under each pair
-const NUM={E9:[150,198],G9:[310,198],I9:[470,198],K9:[630,198],F10:[230,252],J10:[550,252],
+// top row sits under the thin divider of each green box (box x + 71); 1st/2nd sums (F10, J10) go lower,
+// under the two inner dividers
+const NUM={E9:[131,198],G9:[277,198],I9:[504,198],K9:[650,198],F10:[277,270],J10:[504,270],
   H12:[390,314],G13:[310,360],I13:[470,360]};
 const CELL={D15:[97],E15:[168],F15:[239],J15:[539],K15:[610],L15:[681]};   // bottom boxes, y 412-460
 const OVAL={H7:[390,121],H15:[390,437]};
