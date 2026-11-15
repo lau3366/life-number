@@ -418,27 +418,156 @@ $("saveBtn").addEventListener("click",()=>{
   $("name").value=name==="未命名"?"":name; $("name").blur(); renderSaved();
 });
 
-/* PDF: print the reading. iOS/desktop use the print sheet (Save as PDF); the Android app passes it to the system print service */
+/* PDF: the app draws the report itself on one A4 page and builds the PDF file, so every phone
+   gets the same single page (printing let iOS Safari choose its own page breaks) */
+const PDFC={paper:"#ffffff",soft:"#f4efe6",ink:"#2a2622",ink2:"#6f665c",ink3:"#a59b8f",line:"#ddd4c6",accent:"#b23a2b",
+  accentSoft:"#f6e3de",bar:"#1f5fae",green:"#1e8a55",blue:"#5a82cf",blueFill:"rgba(90,130,207,.08)",dark:"#3a4a63",
+  darkFill:"rgba(58,74,99,.05)",num:"#1f4f8f",gold:"#c79a3a",goldInk:"#8a6416"};
+const PSANS='-apple-system,"PingFang TC","Microsoft JhengHei","Noto Sans CJK TC","Noto Sans TC",sans-serif';
+const PNUM='ui-rounded,"SF Pro Rounded",-apple-system,"Helvetica Neue",Arial,sans-serif';
+
+function drawReport(v,iso,name){
+  const W=1654,H=2339,M=94,CW=W-2*M;                 // A4 at 200 dpi
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const g=cv.getContext("2d");
+  const font=(w,px,f)=>g.font=`${w} ${px}px ${f||PSANS}`;
+  const txt=(s,x,y,col,align)=>{g.fillStyle=col;g.textAlign=align||"left";g.fillText(s,x,y);};
+  const rr=(x,y,w,h,r)=>{g.beginPath();g.roundRect?g.roundRect(x,y,w,h,r):g.rect(x,y,w,h);};
+  const box=(x,y,w,h,r,fill,stroke,lw)=>{rr(x,y,w,h,r);if(fill){g.fillStyle=fill;g.fill();}if(stroke){g.strokeStyle=stroke;g.lineWidth=lw||2;g.stroke();}};
+  g.fillStyle=PDFC.paper; g.fillRect(0,0,W,H); g.textBaseline="alphabetic";
+
+  // header
+  const [Y,Mo,D]=iso.split("-"), today=new Date();
+  let y=M+40;
+  font(700,46); txt("生命數字 LIFE NUMBER",M,y,PDFC.ink);
+  font(400,22); txt(`主性格 ${v.H12}　本源夢想 ${v.H7}`,W-M,y-14,PDFC.ink3,"right");
+  txt(`製表日期 ${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`,W-M,y+18,PDFC.ink3,"right");
+  y+=62;
+  let x=M; if(name){font(700,36);txt(name,x,y,PDFC.ink);x+=g.measureText(name).width+22;}
+  font(400,34); txt(`${+Y} 年 ${+Mo} 月 ${+D} 日`,x,y,PDFC.ink);
+  y+=28; g.fillStyle=PDFC.ink; g.fillRect(M,y,CW,4); y+=26;
+
+  // chart card (same geometry as the on-screen chart: viewBox 30 46 720 424)
+  const k=1.45, chartW=720*k, chartH=424*k, barH=92, cardH=barH+chartH+40;
+  box(M,y,CW,cardH,22,PDFC.paper,PDFC.line);
+  g.save(); rr(M,y,CW,cardH,22); g.clip(); g.fillStyle=PDFC.bar; g.fillRect(M,y,CW,barH); g.restore();
+  font(700,34); txt("生命信息",W/2,y+46,"#fff","center");
+  font(400,18); g.globalAlpha=.85; txt("L I F E   N U M B E R",W/2,y+76,"#fff","center"); g.globalAlpha=1;
+  const ox=(W-chartW)/2, oy=y+barH+20, P=(px,py)=>[ox+(px-30)*k, oy+(py-46)*k];
+  const poly=(pts,fill,stroke)=>{g.beginPath();pts.forEach(([a,b],i)=>{const[c,d]=P(a,b);i?g.lineTo(c,d):g.moveTo(c,d);});g.closePath();
+    g.fillStyle=fill;g.fill();g.strokeStyle=stroke;g.lineWidth=2*k;g.lineJoin="round";g.stroke();};
+  poly([[40,164],[740,164],[390,382]],PDFC.blueFill,PDFC.blue);
+  poly([[390,252],[135,398],[645,398]],PDFC.darkFill,PDFC.dark);
+  g.setLineDash([3*k,5*k]); g.lineCap="round"; g.strokeStyle=PDFC.dark; g.lineWidth=1.6*k;
+  [[148,250],[384,410]].forEach(([a,b])=>{g.beginPath();g.moveTo(...P(390,a));g.lineTo(...P(390,b));g.stroke();});
+  g.setLineDash([]);
+  const ctr=(s,px,py,col,w,size,f)=>{font(w,size*k,f);g.textBaseline="middle";txt(String(s),...P(px,py),col,"center");g.textBaseline="alphabetic";};
+  [["日","DAY",131],["月","MONTH",277],["紀","CENTURY",504],["年","YEAR",650]].forEach(([c,e,px])=>{
+    ctr(c,px,60,PDFC.ink2,400,18); ctr(e,px,81,PDFC.ink3,400,13);});
+  ctr("本源夢想",390,71,PDFC.ink,700,21);
+  const digits=(pad(+D)+pad(+Mo)+Y).split("");
+  [[60,0],[206,2],[433,4],[579,6]].forEach(([px,i])=>{
+    const[a,b]=P(px,96); box(a,b,142*k,50*k,12*k,PDFC.green);
+    g.strokeStyle="rgba(255,255,255,.3)";g.lineWidth=1.5*k;g.beginPath();g.moveTo(...P(px+71,106));g.lineTo(...P(px+71,136));g.stroke();
+    ctr(digits[i],px+35.5,122,"#fff",600,30,PNUM); ctr(digits[i+1],px+106.5,122,"#fff",600,30,PNUM);});
+  [62,504].forEach(px=>{const[a,b]=P(px,412); box(a,b,213*k,50*k,12*k,PDFC.paper,PDFC.dark,1.6*k);
+    g.strokeStyle=PDFC.line;g.lineWidth=1.5*k;[71,142].forEach(dx=>{g.beginPath();g.moveTo(...P(px+dx,420));g.lineTo(...P(px+dx,454));g.stroke();});});
+  ctr("主性格",390,272,PDFC.ink,700,21);
+  const circ=(px,py,r,fill,stroke,lw)=>{g.beginPath();g.arc(...P(px,py),r*k,0,Math.PI*2);if(fill){g.fillStyle=fill;g.fill();}if(stroke){g.strokeStyle=stroke;g.lineWidth=lw*k;g.stroke();}};
+  for(const kk in OVAL){const[px,py]=OVAL[kk]; circ(px,py,27,PDFC.paper,PDFC.gold,2.5); ctr(v[kk],px,py+1,PDFC.goldInk,600,34,PNUM);}
+  for(const kk in NUM){const[px,py]=NUM[kk];
+    if(kk==="H12"){circ(px,py,29,PDFC.accent); ctr(v[kk],px,py+1,"#fff",600,40,PNUM);} else ctr(v[kk],px,py+1,PDFC.num,600,34,PNUM);}
+  for(const kk in CELL) ctr(v[kk],CELL[kk][0],438,PDFC.num,600,34,PNUM);
+  const star=(px,py,R)=>{const[c,d]=P(px,py);g.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=(i%2?R*.45:R)*k;
+    const X=c+r*Math.cos(a),Yy=d+r*Math.sin(a);i?g.lineTo(X,Yy):g.moveTo(X,Yy);}g.closePath();g.fillStyle=PDFC.accent;g.fill();};
+  star(70,176,10); star(710,176,10); star(390,362,10);
+  y+=cardH+24;
+
+  // combinations, two columns
+  const rowH=60, rows=Math.ceil(COMBOS.length/2), cH=86+rows*rowH+16;
+  box(M,y,CW,cH,22,PDFC.paper,PDFC.line);
+  font(700,30); txt("數字組合",M+30,y+52,PDFC.ink);
+  const colW=(CW-60-40)/2;
+  COMBOS.forEach(([nm,sub,ks],i)=>{
+    const cx=M+30+(i%2)*(colW+40), cy=y+86+Math.floor(i/2)*rowH+rowH/2;
+    font(400,26,PNUM); g.textBaseline="middle"; txt(String(i+1),cx+30,cy,PDFC.ink3,"right");
+    font(400,27); txt(nm,cx+46,cy,PDFC.ink);
+    if(sub){const w=g.measureText(nm).width; font(400,21); txt(sub,cx+46+w+10,cy+2,PDFC.ink2);}
+    const ds=ks?ks.map(q=>v[q]):v.hidden;
+    ds.forEach((n,j)=>{const bx=cx+colW-3*50+j*50+4; box(bx,cy-21,42,42,9,PDFC.soft,PDFC.line); font(600,26,PNUM); txt(String(n),bx+21,cy+1,PDFC.ink,"center");});
+    g.textBaseline="alphabetic";});
+  y+=cH+24;
+
+  // missing numbers + five elements
+  const bH=330, mW=Math.round(CW*.4), fX=M+mW+24, fW=CW-mW-24;
+  box(M,y,mW,bH,22,PDFC.paper,PDFC.line); box(fX,y,fW,bH,22,PDFC.paper,PDFC.line);
+  font(700,30); txt("缺失數字",M+30,y+52,PDFC.ink); txt("五行",fX+30,y+52,PDFC.ink);
+  const cell=(mW-60-8*8)/9;
+  for(let n=1;n<=9;n++){const bx=M+30+(n-1)*(cell+8), by=y+92, miss=v.missing.includes(n);
+    box(bx,by,cell,cell,9,miss?PDFC.accentSoft:PDFC.soft,miss?PDFC.accent:null,2.5);
+    font(600,26,PNUM); g.textBaseline="middle"; txt(String(n),bx+cell/2,by+cell/2+1,miss?PDFC.accent:PDFC.ink3,"center"); g.textBaseline="alphabetic";}
+  font(400,24); txt(v.missing.length?"缺 "+v.missing.join("　"):"沒有缺失數字",M+30,y+92+cell+48,v.missing.length?PDFC.accent:PDFC.ink2);
+  const tW=(fW-60-4*12)/5;
+  v.five.forEach((f,i)=>{const tx=fX+30+i*(tW+12), ty=y+80, th=bH-110, c=tx+tW/2;
+    box(tx,ty,tW,th,16,i?PDFC.soft:PDFC.accentSoft);
+    font(700,40); txt(f.el,c,ty+58,i?PDFC.ink:PDFC.accent,"center");
+    font(400,19); txt(ROLES[i],c,ty+96,PDFC.ink2,"center");
+    font(600,34,PNUM); txt(String(f.count),c,ty+160,PDFC.ink,"center");
+    g.fillStyle=i?PDFC.ink3:PDFC.accent; const dw=f.count*14-6;
+    for(let d=0;d<f.count;d++){g.beginPath();g.arc(c-dw/2+d*14+4,ty+186,4,0,Math.PI*2);g.fill();}});
+  y+=bH;
+
+  font(400,20); txt("生命數字 LIFE NUMBER · 計算方式與原 Excel 表（Life Number Calculator by WPF）一致",W/2,H-M+20,PDFC.ink3,"center");
+  return cv;
+}
+
+// one-page PDF holding the report as a JPEG
+function buildPdf(cv,title){
+  const jpg=Uint8Array.from(atob(cv.toDataURL("image/jpeg",.92).split(",")[1]),c=>c.charCodeAt(0));
+  const enc=new TextEncoder(), parts=[], offs=[]; let len=0;
+  const add=b=>{const u=typeof b==="string"?enc.encode(b):b; parts.push(u); len+=u.length;};
+  const obj=(n,body)=>{offs[n]=len; add(`${n} 0 obj\n`); body(); add("\nendobj\n");};
+  const utf16=s=>"<FEFF"+[...s].map(ch=>{const c=ch.codePointAt(0); if(c<0x10000) return c.toString(16).padStart(4,"0");
+    const t=c-0x10000; return ((t>>10)+0xD800).toString(16)+((t&1023)+0xDC00).toString(16);}).join("").toUpperCase()+">";
+  const PW=595.28, PH=841.89, content=`q ${PW} 0 0 ${PH} 0 0 cm /Im0 Do Q`;
+  add("%PDF-1.4\n"); add(new Uint8Array([37,226,227,207,211,10]));
+  obj(1,()=>add("<< /Type /Catalog /Pages 2 0 R >>"));
+  obj(2,()=>add("<< /Type /Pages /Kids [3 0 R] /Count 1 >>"));
+  obj(3,()=>add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`));
+  obj(4,()=>{add(`<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`); add(jpg); add("\nendstream");});
+  obj(5,()=>add(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`));
+  obj(6,()=>add(`<< /Title ${utf16(title)} /Producer (Life Number) >>`));
+  const xref=len;
+  add(`xref\n0 7\n0000000000 65535 f \n`+[1,2,3,4,5,6].map(n=>String(offs[n]).padStart(10,"0")+" 00000 n \n").join(""));
+  add(`trailer\n<< /Size 7 /Root 1 0 R /Info 6 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  const out=new Uint8Array(len); let p=0; parts.forEach(u=>{out.set(u,p);p+=u.length;}); return out;
+}
+
 function exportPdf(){
   if(!cur) return;
+  if(document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName)) document.activeElement.blur();
   const name=$("name").value.trim(), [Y,M,D]=cur.iso.split("-");
-  const date=`${+Y} 年 ${+M} 月 ${+D} 日`, today=new Date();
-  $("printHead").innerHTML=`<div><h1>生命數字 LIFE NUMBER</h1><div class="who">${name?`<b>${esc(name)}</b>`:""}${date}</div></div>
-    <small>主性格 ${cur.v.H12}　本源夢想 ${cur.v.H7}<br>製表日期 ${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}</small>`;
-  const title=`生命數字-${name||"未命名"}-${Y}${M}${D}`, old=document.title;
-  document.title=title;
-  const restore=()=>{ document.title=old; window.removeEventListener("afterprint",restore); };
-  window.addEventListener("afterprint",restore);
-  // with the name box still focused, the on-screen keyboard squeezes the page and iOS prints an
-  // extra blank page, so close the keyboard and go to the top before printing
-  const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName);
-  if(typing) document.activeElement.blur();
-  scrollTo(0,0);
-  const go=()=>{ if(window.AndroidPrint) AndroidPrint.print(title); else window.print(); };
-  if(typing) setTimeout(go,450); else go();
-  setTimeout(()=>{ if(window.AndroidPrint) document.title=old; },3000);
+  const title=`生命數字-${name||"未命名"}-${Y}${M}${D}`, file=title+".pdf";
+  let bytes;
+  try{ bytes=buildPdf(drawReport(cur.v,cur.iso,name),title); }
+  catch(err){ alert("PDF 產生失敗："+err.message); return; }
+  // Android app: save to Downloads natively (older app versions fall back to printing)
+  if(window.AndroidPrint&&typeof AndroidPrint.savePdf==="function"){
+    let s=""; for(let i=0;i<bytes.length;i+=0x8000) s+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
+    if(!AndroidPrint.savePdf(btoa(s),file)) AndroidPrint.print(title);
+    return;
+  }
+  const blob=new Blob([bytes],{type:"application/pdf"});
+  const mobile=/iphone|ipad|ipod|android/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  try{
+    const f=new File([blob],file,{type:"application/pdf"});
+    if(mobile&&navigator.canShare&&navigator.canShare({files:[f]})){ navigator.share({files:[f],title}).catch(()=>{}); return; }
+  }catch(e){}
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=file;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),10000);
 }
 $("pdfBtn").addEventListener("click",exportPdf);
+window.__pdf={drawReport,buildPdf};   // for checking the output
 $("saved").addEventListener("click",e=>{
   const list=store.get("ln.saved",[]);
   const del=e.target.closest("[data-del]");
