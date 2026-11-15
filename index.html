@@ -196,7 +196,7 @@ footer{text-align:center;font-size:11px;color:var(--ink3);margin-top:20px;letter
   /* fixed chart size: iOS Safari ignores @page size and prints on its own (often shorter) paper,
      so a full-width chart pushed the page onto a second sheet */
   .tri svg{width:118mm;margin:0 auto}
-  .combos{display:grid;grid-template-columns:1fr 1fr;column-gap:18px}
+  .combos{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(7,auto);grid-auto-flow:column;column-gap:18px}
   .combos li{padding:3px 4px;gap:8px;background:none!important}
   .combos li::before{display:none}
   .combos .nm{font-size:12px}
@@ -488,7 +488,8 @@ function drawReport(v,iso,name){
   font(700,30); txt("數字組合",M+30,y+52,PDFC.ink);
   const colW=(CW-60-40)/2;
   COMBOS.forEach(([nm,sub,ks],i)=>{
-    const cx=M+30+(i%2)*(colW+40), cy=y+86+Math.floor(i/2)*rowH+rowH/2;
+    const col=i<rows?0:1, row=i%rows;   // down the left column (1-7), then the right (8-13), like the Excel sheet
+    const cx=M+30+col*(colW+40), cy=y+86+row*rowH+rowH/2;
     font(400,26,PNUM); g.textBaseline="middle"; txt(String(i+1),cx+30,cy,PDFC.ink3,"right");
     font(400,27); txt(nm,cx+46,cy,PDFC.ink);
     if(sub){const w=g.measureText(nm).width; font(400,21); txt(sub,cx+46+w+10,cy+2,PDFC.ink2);}
