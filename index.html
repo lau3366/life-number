@@ -189,7 +189,10 @@ footer{text-align:center;font-size:11px;color:var(--ink3);margin-top:20px;letter
   .card h2{font-size:13px;margin-bottom:6px}
   .card.lifecard{padding:0}
   .lifebar{padding:6px 0 5px}
-  .tri{padding:4px 40px 8px}
+  .tri{padding:4px 0 6px}
+  /* fixed chart size: iOS Safari ignores @page size and prints on its own (often shorter) paper,
+     so a full-width chart pushed the page onto a second sheet */
+  .tri svg{width:118mm;margin:0 auto}
   .combos{display:grid;grid-template-columns:1fr 1fr;column-gap:18px}
   .combos li{padding:3px 4px;gap:8px;background:none!important}
   .combos li::before{display:none}
