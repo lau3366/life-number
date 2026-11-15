@@ -309,8 +309,9 @@ function calc(d1,d2,m1,m2,c1,c2,y1,y2){
 }
 
 /* chart layout, coordinates follow the original Excel drawing */
-const NUM={E9:[168,178],G9:[310,178],I9:[468,178],K9:[610,178],F10:[238,224],J10:[540,224],
-  H12:[390,318],G13:[310,360],I13:[468,360]};
+// top row evenly spaced (160 apart, mirrored on the centre line), second row centred under each pair
+const NUM={E9:[150,198],G9:[310,198],I9:[470,198],K9:[630,198],F10:[230,252],J10:[550,252],
+  H12:[390,314],G13:[310,360],I13:[470,360]};
 const CELL={D15:[97],E15:[168],F15:[239],J15:[539],K15:[610],L15:[681]};   // bottom boxes, y 412-460
 const OVAL={H7:[390,121],H15:[390,437]};
 const COMBOS=[
@@ -341,7 +342,6 @@ h+=`<text class="lbl b" x="390" y="78">本源夢想</text>`;
 // bottom cell groups
 [[62],[504]].forEach(([x])=>{
   h+=`<rect class="cellg" x="${x}" y="412" width="213" height="50" rx="12"/><line class="csep" x1="${x+71}" y1="420" x2="${x+71}" y2="454"/><line class="csep" x1="${x+142}" y1="420" x2="${x+142}" y2="454"/>`;});
-h+=`<text class="lbl b" x="390" y="280">主性格</text>`;
 for(const k in OVAL){const [x,y]=OVAL[k];
   h+=`<g data-k="${k}"><circle class="ring" cx="${x}" cy="${y}" r="27"/><circle class="bg" cx="${x}" cy="${y}" r="24"/><text class="n ringt" x="${x}" y="${y+1}"></text></g>`;}
 for(const k in NUM){const [x,y]=NUM[k];
@@ -472,7 +472,6 @@ function drawReport(v,iso,name){
     ctr(digits[i],px+35.5,122,"#fff",600,30,PNUM); ctr(digits[i+1],px+106.5,122,"#fff",600,30,PNUM);});
   [62,504].forEach(px=>{const[a,b]=P(px,412); box(a,b,213*k,50*k,12*k,PDFC.paper,PDFC.dark,1.6*k);
     g.strokeStyle=PDFC.line;g.lineWidth=1.5*k;[71,142].forEach(dx=>{g.beginPath();g.moveTo(...P(px+dx,420));g.lineTo(...P(px+dx,454));g.stroke();});});
-  ctr("主性格",390,272,PDFC.ink,700,21);
   const circ=(px,py,r,fill,stroke,lw)=>{g.beginPath();g.arc(...P(px,py),r*k,0,Math.PI*2);if(fill){g.fillStyle=fill;g.fill();}if(stroke){g.strokeStyle=stroke;g.lineWidth=lw*k;g.stroke();}};
   for(const kk in OVAL){const[px,py]=OVAL[kk]; circ(px,py,27,PDFC.paper,PDFC.gold,2.5); ctr(v[kk],px,py+1,PDFC.goldInk,600,34,PNUM);}
   for(const kk in NUM){const[px,py]=NUM[kk];
