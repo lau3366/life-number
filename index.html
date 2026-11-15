@@ -407,7 +407,7 @@ const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&qu
 
 $("dob").addEventListener("change",e=>{
   const val=e.target.value; if(!/^\d{4}-\d{2}-\d{2}$/.test(val)) return;
-  render(val); store.set("ln.last",val);
+  render(val); sess.set(val);
 });
 $("combos").addEventListener("click",e=>{const li=e.target.closest("li"); if(li) highlight(+li.dataset.i);});
 $("saveBtn").addEventListener("click",()=>{
@@ -575,7 +575,7 @@ $("saved").addEventListener("click",e=>{
   const pdf=e.target.closest("[data-pdf]");
   const who=pdf||e.target.closest(".who"); if(!who) return;
   const p=list[+(pdf?pdf.dataset.pdf:who.dataset.i)];
-  $("dob").value=p.iso; $("name").value=p.name==="未命名"?"":p.name; render(p.iso); store.set("ln.last",p.iso);
+  $("dob").value=p.iso; $("name").value=p.name==="未命名"?"":p.name; render(p.iso); sess.set(p.iso);
   if(pdf){ exportPdf(); return; }
   scrollTo({top:0,behavior:"smooth"});
 });
@@ -639,7 +639,11 @@ $("back").addEventListener("click",closeSheet); $("shCancel").addEventListener("
 $("shOk").addEventListener("click",()=>{ const iso=preview(); $("dob").value=iso; $("dob").dispatchEvent(new Event("change")); closeSheet(); });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeSheet(); });
 
-const start=store.get("ln.last","1990-01-01");
+// the date on screen only lasts for this session: closing the app from the background starts again at
+// 1990-01-01, while saved records (ln.saved, localStorage) stay
+const sess={get(){try{return sessionStorage.getItem("ln.cur")}catch(e){return null}},set(v){try{sessionStorage.setItem("ln.cur",v)}catch(e){}}};
+try{localStorage.removeItem("ln.last")}catch(e){}
+const start=sess.get()||"1990-01-01";
 $("dob").value=start; render(start); renderSaved();
 
 const standalone=navigator.standalone||matchMedia("(display-mode: standalone)").matches;
