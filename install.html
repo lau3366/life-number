@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>安裝生命數字</title>
+<meta name="description" content="三步把「生命數字」加到手機主畫面，像 App 一樣打開，離線也能用。">
+<meta property="og:title" content="安裝生命數字">
+<meta property="og:description" content="三步把「生命數字」加到手機主畫面，像 App 一樣打開，離線也能用。">
+<meta property="og:image" content="https://lau3366.github.io/life-number/icon-512.png">
+<meta property="og:url" content="https://lau3366.github.io/life-number/install.html">
+<meta name="theme-color" content="#f4efe6">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-512.png">
+<style>
+:root{
+  --bg:#f4efe6; --card:#fbf8f2; --ink:#2a2622; --ink2:#6f665c; --ink3:#a59b8f; --line:#ddd4c6;
+  --accent:#b23a2b; --accent-soft:#f1dcd6; --ios:#007aff; --phone:#ffffff; --phone2:#f2f2f7;
+  --serif:"Songti TC","Songti SC","Noto Serif TC","Noto Serif CJK TC",serif;
+  --sans:-apple-system,"PingFang TC","PingFang SC","Helvetica Neue","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#1b1917; --card:#24211e; --ink:#ece6db; --ink2:#a89f93; --ink3:#6f675e; --line:#3a3530;
+    --accent:#d9604c; --accent-soft:#3d2622; --ios:#0a84ff; --phone:#2c2c2e; --phone2:#1c1c1e; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}
+body{padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 32px)}
+main{max-width:520px;margin:0 auto}
+button{font:inherit;color:inherit}
+
+.hero{display:flex;align-items:center;gap:14px;margin:6px 2px 18px}
+.hero img{width:64px;height:64px;border-radius:15px;box-shadow:0 0 0 1px var(--line)}
+.hero h1{font-family:var(--serif);font-size:24px;margin:0;letter-spacing:.06em}
+.hero p{margin:4px 0 0;font-size:14px;color:var(--ink2)}
+
+.open{display:block;text-align:center;text-decoration:none;background:var(--ink);color:var(--bg);
+  border-radius:14px;padding:15px 0;font-size:16px;font-weight:700;letter-spacing:.04em}
+.open:active{opacity:.75}
+.note{font-size:13px;color:var(--ink2);text-align:center;margin:10px 0 22px;line-height:1.6}
+
+.warn{display:none;background:var(--accent-soft);border:1px solid var(--accent);border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:14px;line-height:1.65}
+.warn.show{display:block}
+.warn b{color:var(--accent)}
+.copy{margin-top:10px;border:1px solid var(--accent);background:var(--card);color:var(--accent);border-radius:10px;padding:8px 14px;font-weight:700;font-size:14px;cursor:pointer}
+
+.done{display:none;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;font-size:15px}
+.done.show{display:block}
+
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px;margin-bottom:14px}
+.tabs button{border:0;background:none;border-radius:9px;padding:10px 0;font-size:15px;font-weight:600;color:var(--ink2);cursor:pointer}
+.tabs button.on{background:var(--ink);color:var(--bg)}
+
+.steps{list-style:none;margin:0;padding:0;display:none}
+.steps.on{display:block}
+.step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+.step h2{display:flex;align-items:center;gap:10px;font-size:16px;margin:0 0 4px}
+.step h2 i{font-style:normal;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;
+  display:grid;place-items:center;font-size:14px;flex:none}
+.step p{margin:0 0 12px 36px;font-size:14px;color:var(--ink2);line-height:1.6}
+.step p b{color:var(--ink)}
+
+/* phone mock-ups */
+.mock{background:var(--phone2);border-radius:14px;padding:12px;font-size:13px;color:#8e8e93;overflow:hidden}
+.bar{display:flex;align-items:center;justify-content:space-around;background:var(--phone);border-radius:12px;padding:10px 6px}
+.ic{width:24px;height:24px;stroke:var(--ios);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ic.mute{stroke:#b5b5bb}
+.hit{position:relative;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;box-shadow:0 0 0 2.5px var(--accent);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 5px var(--accent-soft),0 0 0 2.5px var(--accent)}}
+@media (prefers-reduced-motion: reduce){.hit{animation:none}}
+.url{flex:1;margin:0 8px;background:var(--phone2);border-radius:9px;padding:7px 10px;text-align:center;color:var(--ink2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list{background:var(--phone);border-radius:12px;overflow:hidden}
+.row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;color:var(--ink)}
+.row+.row{border-top:1px solid var(--line)}
+.row.dim{color:var(--ink3)}
+.row.hl{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent);font-weight:700}
+.top{display:flex;justify-content:space-between;align-items:center;background:var(--phone);border-radius:12px 12px 0 0;padding:11px 14px;color:var(--ink);font-weight:600}
+.top span{color:var(--ios);font-weight:400}
+.top .add{color:var(--ios);font-weight:700;padding:4px 10px;border-radius:8px;box-shadow:0 0 0 2.5px var(--accent)}
+.preview{display:flex;align-items:center;gap:12px;background:var(--phone);border-top:1px solid var(--line);border-radius:0 0 12px 12px;padding:12px 14px;color:var(--ink)}
+.preview img{width:44px;height:44px;border-radius:10px}
+.preview small{display:block;color:var(--ink3);font-size:11px;margin-top:2px}
+.home{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 8px;padding:6px 4px;text-align:center;font-size:11px;color:var(--ink2)}
+.home div span{display:block;width:46px;height:46px;margin:0 auto 5px;border-radius:11px;background:var(--line)}
+.home .me img{display:block;width:46px;height:46px;margin:0 auto 5px;border-radius:11px;box-shadow:0 0 0 2.5px var(--accent)}
+.home .me{color:var(--ink);font-weight:700}
+.dialog{background:var(--phone);border-radius:14px;padding:16px;color:var(--ink)}
+.dialog b{display:block;font-size:15px;margin-bottom:10px}
+.dialog .btns{display:flex;justify-content:flex-end;gap:18px;margin-top:14px;font-weight:600;color:#1a73e8}
+.dialog .btns .ok{padding:4px 10px;border-radius:8px;box-shadow:0 0 0 2.5px var(--accent)}
+.and .ic{stroke:#5f6368}
+.tip{font-size:13px;color:var(--ink2);line-height:1.7;background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:12px 14px}
+footer{text-align:center;font-size:12px;color:var(--ink3);margin-top:22px}
+</style>
+</head>
+<body>
+<main>
+  <div class="hero">
+    <img src="icon-180.png" alt="">
+    <div><h1>生命數字</h1><p>加到主畫面，像 App 一樣打開，離線也能用</p></div>
+  </div>
+
+  <div class="done" id="done">你已經是從主畫面打開的，安裝完成了。</div>
+
+  <div class="warn" id="warn">
+    你現在是在 <b id="appName">聊天 App</b> 裡面打開這個網頁，這裡沒辦法加到主畫面。<br>
+    請點右上角「⋯」，選 <b id="openIn">在 Safari 中打開</b>；或者複製連結，貼到瀏覽器打開。
+    <br><button class="copy" id="copy">複製連結</button>
+  </div>
+
+  <a class="open" href="./">開啟生命數字</a>
+  <p class="note">先點上面的按鈕打開，再照下面的步驟加到主畫面。</p>
+
+  <div class="tabs" role="tablist">
+    <button id="tIos" role="tab">iPhone / iPad</button>
+    <button id="tAnd" role="tab">Android</button>
+  </div>
+
+  <!-- iPhone -->
+  <ol class="steps" id="sIos">
+    <li class="step">
+      <h2><i>1</i>用 Safari 打開，點「分享」</h2>
+      <p>在 <b>Safari</b> 打開生命數字，點螢幕下方的分享按鈕（方框加向上箭頭）。<br>看不到的話，先點右下角的 <b>「⋯」</b> 再點「分享」。</p>
+      <div class="mock"><div class="bar">
+        <svg class="ic mute" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        <svg class="ic mute" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        <span class="hit"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H5v10h14V11h-2"/></svg></span>
+        <svg class="ic mute" viewBox="0 0 24 24"><path d="M5 5h10v14H5zM15 7h4v12h-4"/></svg>
+        <svg class="ic mute" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>
+      </div></div>
+    </li>
+    <li class="step">
+      <h2><i>2</i>選「加入主畫面」</h2>
+      <p>在彈出的選單往下滑，找到 <b>「加入主畫面」</b>。</p>
+      <div class="mock"><div class="list">
+        <div class="row dim">拷貝 <span>⧉</span></div>
+        <div class="row dim">加入書籤 <span>□</span></div>
+        <div class="row dim">加入個人收藏 <span>☆</span></div>
+        <div class="row hl">加入主畫面 <svg class="ic" viewBox="0 0 24 24" style="stroke:var(--ink)"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg></div>
+      </div></div>
+    </li>
+    <li class="step">
+      <h2><i>3</i>點右上角「新增」</h2>
+      <p>名字已經填好「生命數字」，直接點 <b>「新增」</b>。</p>
+      <div class="mock">
+        <div class="top"><span>取消</span>加入主畫面<span class="add">新增</span></div>
+        <div class="preview"><img src="icon-180.png" alt=""><div>生命數字<small>lau3366.github.io</small></div></div>
+      </div>
+    </li>
+    <li class="step">
+      <h2><i>4</i>完成</h2>
+      <p>主畫面會出現「生命數字」圖示，以後直接點它打開就可以，沒有網絡也能用。</p>
+      <div class="mock"><div class="home">
+        <div><span></span>相機</div><div><span></span>相片</div><div><span></span>訊息</div>
+        <div class="me"><img src="icon-180.png" alt="">生命數字</div>
+      </div></div>
+    </li>
+  </ol>
+
+  <!-- Android -->
+  <ol class="steps and" id="sAnd">
+    <li class="step">
+      <h2><i>1</i>用 Chrome 打開，點「⋮」</h2>
+      <p>在 <b>Chrome</b> 打開生命數字，點右上角的 <b>「⋮」</b>。</p>
+      <div class="mock"><div class="bar">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></svg>
+        <span class="url">lau3366.github.io/life-number</span>
+        <span class="hit"><svg class="ic" viewBox="0 0 24 24" style="fill:#5f6368;stroke:none"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></span>
+      </div></div>
+    </li>
+    <li class="step">
+      <h2><i>2</i>選「加到主畫面」</h2>
+      <p>在選單中點 <b>「加到主畫面」</b>（有些手機寫「安裝應用程式」）。</p>
+      <div class="mock"><div class="list">
+        <div class="row dim">新分頁</div>
+        <div class="row dim">書籤</div>
+        <div class="row dim">分享…</div>
+        <div class="row hl">加到主畫面</div>
+      </div></div>
+    </li>
+    <li class="step">
+      <h2><i>3</i>點「安裝」或「新增」</h2>
+      <p>確認名稱後點 <b>「安裝」</b>。</p>
+      <div class="mock"><div class="dialog">
+        <b>安裝應用程式</b>
+        <div style="display:flex;align-items:center;gap:12px"><img src="icon-180.png" alt="" style="width:40px;height:40px;border-radius:10px">生命數字</div>
+        <div class="btns"><span>取消</span><span class="ok">安裝</span></div>
+      </div></div>
+    </li>
+    <li class="step">
+      <h2><i>4</i>完成</h2>
+      <p>主畫面或應用程式清單裡會出現「生命數字」。</p>
+      <div class="mock"><div class="home">
+        <div><span></span>電話</div><div><span></span>相機</div><div><span></span>Chrome</div>
+        <div class="me"><img src="icon-180.png" alt="">生命數字</div>
+      </div></div>
+    </li>
+  </ol>
+
+  <div class="tip">保存的記錄只存在你自己這部手機上。以後有新版本，連上網打開時會自動更新，不用重新安裝。</div>
+  <footer>生命數字 · LIFE NUMBER</footer>
+</main>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id), ua=navigator.userAgent;
+  const ios=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  const android=/android/i.test(ua);
+
+  function show(which){
+    $("tIos").classList.toggle("on",which==="ios"); $("tAnd").classList.toggle("on",which==="and");
+    $("sIos").classList.toggle("on",which==="ios"); $("sAnd").classList.toggle("on",which==="and");
+  }
+  $("tIos").onclick=()=>show("ios"); $("tAnd").onclick=()=>show("and");
+  show(android?"and":"ios");
+
+  if(navigator.standalone||matchMedia("(display-mode: standalone)").matches) $("done").classList.add("show");
+
+  // in-app browsers (WeChat, Facebook, Instagram, LINE, etc.) cannot add to home screen
+  const apps=[["MicroMessenger","微信"],["FBAN","Facebook"],["FBAV","Facebook"],["Instagram","Instagram"],
+    ["Line/","LINE"],["XiaoHongShu","小紅書"],["Weibo","微博"],["TikTok","TikTok"],["musical_ly","TikTok"],["BytedanceWebview","抖音"]];
+  const hit=apps.find(([k])=>ua.includes(k));
+  if(hit){
+    $("appName").textContent=hit[1];
+    $("openIn").textContent=ios?"在 Safari 中打開":"在瀏覽器中打開";
+    $("warn").classList.add("show");
+  }
+  $("copy").onclick=async()=>{
+    const link=location.href.replace(/install\.html.*$/,"");
+    try{ await navigator.clipboard.writeText(link); $("copy").textContent="已複製"; }
+    catch(e){ prompt("長按複製這個連結：",link); }
+  };
+})();
+</script>
+</body>
+</html>
