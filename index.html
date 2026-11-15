@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>生命數字</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="生命數字">
+<meta name="theme-color" content="#f4efe6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1b1917" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-512.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{
+  --bg:#f4efe6; --card:#fbf8f2; --ink:#2a2622; --ink2:#6f665c; --ink3:#a59b8f;
+  --line:#ddd4c6; --accent:#b23a2b; --accent-soft:#f1dcd6; --hl:#efe2c4;
+  --serif:"Songti TC","Songti SC","Noto Serif TC","Noto Serif CJK TC",serif;
+  --sans:-apple-system,"PingFang TC","PingFang SC","Helvetica Neue","Microsoft JhengHei",sans-serif;
+  --bar:#1f5fae;--green:#1e8a55;--blue:#5a82cf;--tri-blue-fill:rgba(90,130,207,.08);--tri-dark:#3a4a63;--tri-dark-fill:rgba(58,74,99,.05);
+  --num-blue:#1f4f8f;--hl-y:#ffe08a;--gold:#c79a3a;--gold-ink:#8a6416;
+  --num:ui-rounded,"SF Pro Rounded",-apple-system,"Helvetica Neue",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#1b1917; --card:#24211e; --ink:#ece6db; --ink2:#a89f93; --ink3:#6f675e;
+    --line:#3a3530; --accent:#d9604c; --accent-soft:#3d2622; --hl:#3b3424;
+    --tri-dark:#aeb8c8; --num-blue:#9cc3ef; --blue:#7c9be0; --hl-y:#6a5520; --bar:#24518f; --green:#227a4e;
+    --tri-blue-fill:rgba(124,155,224,.10); --tri-dark-fill:rgba(174,184,200,.06); --gold:#d6ad55; --gold-ink:#e3c27a; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}
+body{padding:calc(env(safe-area-inset-top) + 8px) 16px calc(env(safe-area-inset-bottom) + 32px);
+  -webkit-text-size-adjust:100%}
+main{max-width:560px;margin:0 auto}
+button{font:inherit;color:inherit}
+
+header{display:flex;align-items:baseline;justify-content:space-between;padding:14px 2px 18px}
+header h1{font-family:var(--serif);font-weight:700;font-size:28px;letter-spacing:.08em;margin:0}
+header small{font-size:11px;letter-spacing:.22em;color:var(--ink3)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
+.card h2{font-family:var(--serif);font-size:17px;font-weight:700;margin:0 0 4px;letter-spacing:.06em}
+.card .sub{font-size:12px;color:var(--ink3);margin:0 0 14px;letter-spacing:.04em}
+
+/* date */
+.datebtn{display:flex;align-items:center;justify-content:space-between;width:100%;border:0;background:none;padding:0;text-align:left;cursor:pointer}
+.datebtn .big{font-family:var(--serif);font-size:26px;font-weight:700;letter-spacing:.04em}
+.datebtn .big span{color:var(--ink3);font-size:16px;margin:0 4px 0 2px;font-weight:400}
+.datebtn .chg{font-size:14px;color:var(--accent);font-weight:600;border:1px solid var(--accent);border-radius:999px;padding:6px 14px}
+.datebtn:active .chg{background:var(--accent-soft)}
+.save{display:flex;gap:8px;margin-top:16px}
+.save input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);
+  border-radius:12px;padding:11px 12px;font-size:16px;font-family:var(--sans)}
+.btn{border:0;background:var(--ink);color:var(--bg);border-radius:12px;padding:0 16px;font-size:15px;font-weight:600}
+.btn:active{opacity:.7}
+
+/* date sheet */
+.back{position:fixed;inset:0;background:rgba(20,16,12,.38);opacity:0;pointer-events:none;transition:opacity .25s;z-index:10}
+.back.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:560px;background:var(--card);z-index:11;
+  border-radius:22px 22px 0 0;padding:6px 18px calc(env(safe-area-inset-bottom) + 18px);
+  transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.sheet.open{transform:none}
+.grab{width:38px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 6px}
+.sh-head{display:flex;align-items:center;justify-content:space-between;padding:4px 0 12px}
+.sh-head b{font-family:var(--serif);font-size:17px;letter-spacing:.06em}
+.sh-head button{border:0;background:none;font-size:16px;padding:6px 2px;color:var(--ink2);cursor:pointer}
+.sh-head .ok{color:var(--accent);font-weight:700}
+.typed{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;
+  padding:11px 12px;font-size:16px;font-family:var(--num);letter-spacing:.08em;text-align:center}
+.typed::placeholder{letter-spacing:0;font-family:var(--sans);color:var(--ink3)}
+.wheels{position:relative;display:grid;grid-template-columns:1.3fr 1fr 1fr;height:220px;margin-top:12px;
+  -webkit-mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
+.band{position:absolute;left:0;right:0;top:90px;height:40px;border-radius:10px;background:var(--bg);pointer-events:none}
+.wheel{position:relative;overflow-y:scroll;scroll-snap-type:y mandatory;padding:90px 0;scrollbar-width:none;overscroll-behavior:contain}
+.wheel::-webkit-scrollbar{display:none}
+.wheel div{height:40px;line-height:40px;text-align:center;scroll-snap-align:center;font-family:var(--num);
+  font-size:19px;color:var(--ink3);cursor:pointer;user-select:none;transition:color .1s}
+.wheel div.sel{color:var(--ink);font-weight:600;font-size:21px}
+.wheel div small{font-family:var(--sans);font-size:12px;margin-left:2px}
+.sh-prev{display:flex;justify-content:center;gap:18px;margin-top:12px;font-size:13px;color:var(--ink2)}
+.sh-prev b{font-family:var(--num);font-size:16px;color:var(--accent);margin-left:4px}
+
+/* life chart (reference layout) */
+.card.lifecard{padding:0;overflow:hidden}
+.lifebar{background:var(--bar);color:#fff;text-align:center;padding:10px 0 8px}
+.lifebar b{display:block;font-family:var(--serif);font-size:17px;letter-spacing:.16em}
+.lifebar small{font-size:10px;letter-spacing:.24em;opacity:.8}
+.lifecard .sub{margin:12px 18px 0}
+.tri{padding:4px 8px 14px}
+.tri svg{display:block;width:100%;height:auto;font-family:var(--num)}
+.tri .lbl{fill:var(--ink2);font-family:var(--sans);font-size:18px;text-anchor:middle;letter-spacing:.04em}
+.tri .lbl.en{font-size:13px;fill:var(--ink3);letter-spacing:.12em}
+.tri .lbl.b{font-size:21px;font-weight:700;fill:var(--ink)}
+.tri .pill{fill:var(--green)}
+.tri .sep{stroke:rgba(255,255,255,.28);stroke-width:1.5}
+.tri .boxd{fill:#fff;font-size:30px;font-weight:600;text-anchor:middle;dominant-baseline:central}
+.tri .inv{fill:var(--tri-blue-fill);stroke:var(--blue);stroke-width:2;stroke-linejoin:round}
+.tri .up{fill:var(--tri-dark-fill);stroke:var(--tri-dark);stroke-width:2;stroke-linejoin:round}
+.tri .stem{stroke:var(--tri-dark);stroke-width:1.6;stroke-dasharray:3 5;stroke-linecap:round}
+.tri .ring{fill:var(--card);stroke:var(--gold);stroke-width:2.5}
+.tri .ringt{fill:var(--gold-ink)}
+.tri .cellg{fill:var(--card);stroke:var(--tri-dark);stroke-width:1.6}
+.tri .csep{stroke:var(--line);stroke-width:1.5}
+.tri .n{fill:var(--num-blue);font-size:34px;font-weight:600;text-anchor:middle;dominant-baseline:central}
+.tri .mainc{fill:var(--accent)}
+.tri .maint{fill:#fff;font-size:40px}
+.tri .star{fill:var(--accent);stroke:var(--accent);stroke-width:1.5;stroke-linejoin:round}
+.tri .bg{fill:transparent;transition:fill .15s}
+.tri g.hl .bg{fill:var(--hl-y)}
+.tri g.hl .n{fill:var(--ink)}
+.tri g.hl .maint{fill:#fff}
+.tri g.hl .mainc{stroke:var(--hl-y);stroke-width:6}
+
+/* combos */
+.combos{list-style:none;margin:0;padding:0}
+.combos li{position:relative;display:flex;align-items:center;gap:12px;padding:11px 8px;border-radius:12px;cursor:pointer}
+.combos li+li::before{content:"";position:absolute;left:8px;right:8px;top:0;height:1px;background:var(--line)}
+.combos li.on{background:var(--hl)}
+.combos li.on::before,.combos li.on+li::before{display:none}
+.combos .no{width:22px;font-family:var(--num);font-size:13px;color:var(--ink3);text-align:right}
+.combos .nm{flex:1;font-size:15px}
+.combos .nm em{font-style:normal;font-size:12px;color:var(--ink2);margin-left:4px}
+.digits{display:flex;gap:5px}
+.digits b{width:28px;height:30px;display:grid;place-items:center;border-radius:8px;background:var(--bg);
+  border:1px solid var(--line);font-family:var(--num);font-size:17px;font-weight:600}
+.combos li.on .digits b{background:var(--card)}
+
+/* missing */
+.nine{display:grid;grid-template-columns:repeat(9,1fr);gap:6px}
+.nine b{aspect-ratio:1;display:grid;place-items:center;border-radius:10px;font-family:var(--num);
+  font-size:17px;font-weight:600;color:var(--ink3);background:var(--bg)}
+.nine b.miss{color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.note{font-size:13px;color:var(--ink2);margin-top:12px}
+.note b{color:var(--accent)}
+
+/* five elements */
+.five{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center}
+.five>div{border-radius:12px;background:var(--bg);padding:12px 2px 10px}
+.five>div:first-child{background:var(--accent-soft)}
+.five .el{font-family:var(--serif);font-size:24px;font-weight:700}
+.five>div:first-child .el{color:var(--accent)}
+.five .role{font-size:11px;color:var(--ink2);margin-top:2px;min-height:2.6em;line-height:1.3}
+.five .cnt{font-family:var(--num);font-size:20px;font-weight:600;margin-top:6px}
+.five .dots{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;margin-top:6px;min-height:6px;padding:0 6px}
+.five .dots i{width:5px;height:5px;border-radius:50%;background:var(--ink3)}
+.five>div:first-child .dots i{background:var(--accent)}
+
+/* saved */
+.saved{list-style:none;margin:0;padding:0}
+.saved li{display:flex;align-items:center;gap:10px;padding:10px 4px}
+.saved li+li{border-top:1px solid var(--line)}
+.saved .who{flex:1;min-width:0;cursor:pointer}
+.saved .who b{display:block;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.saved .who span{font-size:12px;color:var(--ink2)}
+.saved .main-n{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);
+  color:var(--accent);font-family:var(--num);font-weight:700}
+.saved .del{border:0;background:none;color:var(--ink3);font-size:13px;padding:8px}
+.empty{font-size:13px;color:var(--ink3);padding:4px 0}
+
+.install{display:none;font-size:13px;color:var(--ink2);line-height:1.6}
+.install.show{display:block}
+footer{text-align:center;font-size:11px;color:var(--ink3);margin-top:20px;letter-spacing:.04em}
+.btn2{display:block;width:100%;margin-top:10px;border:1px solid var(--line);background:none;border-radius:12px;
+  padding:11px 0;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer}
+.btn2:active{background:var(--bg)}
+.saved .pdf{border:1px solid var(--line);background:none;border-radius:8px;color:var(--ink2);font-size:12px;font-weight:600;padding:5px 9px;cursor:pointer}
+.print-head{display:none}
+
+/* PDF / print: one A4 page, light colours, only the reading */
+@page{size:A4;margin:12mm}
+@media print{
+  :root{ --bg:#f4efe6; --card:#fff; --ink:#2a2622; --ink2:#6f665c; --ink3:#a59b8f; --line:#ddd4c6;
+    --accent:#b23a2b; --accent-soft:#f6e3de; --bar:#1f5fae; --green:#1e8a55; --blue:#5a82cf; --tri-dark:#3a4a63;
+    --num-blue:#1f4f8f; --gold:#c79a3a; --gold-ink:#8a6416; --tri-blue-fill:rgba(90,130,207,.08); --tri-dark-fill:rgba(58,74,99,.05); }
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  html,body{background:#fff}
+  body{padding:0}
+  main{max-width:none}
+  header,.install,footer,.sheet,.back,.sub,#dateCard,#savedCard,.save,.btn2,.datebtn{display:none!important}
+  .print-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding:0 2px 8px;margin-bottom:10px}
+  .print-head h1{font-family:var(--serif);font-size:22px;margin:0;letter-spacing:.06em}
+  .print-head .who{font-size:15px;margin-top:4px}
+  .print-head .who b{font-size:17px;margin-right:10px}
+  .print-head small{font-size:10px;color:var(--ink3);text-align:right;line-height:1.5}
+  .card{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;break-inside:avoid}
+  .card h2{font-size:13px;margin-bottom:6px}
+  .card.lifecard{padding:0}
+  .lifebar{padding:6px 0 5px}
+  .tri{padding:4px 40px 8px}
+  .combos{display:grid;grid-template-columns:1fr 1fr;column-gap:18px}
+  .combos li{padding:3px 4px;gap:8px;background:none!important}
+  .combos li::before{display:none}
+  .combos .nm{font-size:12px}
+  .digits b{width:20px;height:20px;font-size:12px;border-radius:5px}
+  .tri g.hl .bg{fill:transparent} .tri g.hl .n{fill:var(--num-blue)} .tri g.hl .ringt{fill:var(--gold-ink)} .tri g.hl .mainc{stroke:none}
+  .grid2{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
+  .grid2 .card{margin-bottom:0}
+  .nine{gap:3px} .nine b{font-size:12px;border-radius:5px}
+  .note{margin-top:6px;font-size:11px}
+  .five .el{font-size:16px} .five .role{font-size:9px} .five .cnt{font-size:13px;margin-top:2px} .five>div{padding:6px 1px}
+}
+</style>
+</head>
+<body>
+<main>
+  <header><h1>生命數字</h1><small>LIFE NUMBER</small></header>
+
+  <section class="card install" id="install">
+    <h2>加入主畫面</h2>
+    在 Safari 點下方「分享」按鈕，選「加入主畫面」，之後就能像 App 一樣打開，離線也可用。
+  </section>
+
+  <section class="card" id="dateCard">
+    <input type="hidden" id="dob">
+    <button class="datebtn" id="openDate" aria-label="更改出生日期">
+      <span class="big" id="dateBig"></span><span class="chg">更改</span>
+    </button>
+    <div class="save">
+      <input id="name" placeholder="姓名（可選）" maxlength="20" autocomplete="off">
+      <button class="btn" id="saveBtn">保存</button>
+    </div>
+    <button class="btn2" id="pdfBtn">匯出 PDF</button>
+  </section>
+
+  <div class="print-head" id="printHead"></div>
+
+  <section class="card lifecard">
+    <div class="lifebar"><b>生命信息</b><small>LIFE NUMBER</small></div>
+    <p class="sub">點下方數字組合，可在圖中標出對應位置</p>
+    <div class="tri"><svg viewBox="30 46 720 424" id="triSvg" role="img" aria-label="生命數字三角圖"></svg></div>
+  </section>
+
+  <section class="card">
+    <h2>數字組合</h2>
+    <p class="sub">Number Combination</p>
+    <ul class="combos" id="combos"></ul>
+  </section>
+
+  <div class="grid2">
+  <section class="card">
+    <h2>缺失數字</h2>
+    <p class="sub">Missing Number · 以上三角前七個數字計</p>
+    <div class="nine" id="nine"></div>
+    <div class="note" id="missNote"></div>
+  </section>
+
+  <section class="card">
+    <h2>五行</h2>
+    <p class="sub">5 Elements · 以主性格數為自身，依相生順序排列</p>
+    <div class="five" id="five"></div>
+  </section>
+  </div>
+
+  <section class="card" id="savedCard">
+    <h2>記錄</h2>
+    <p class="sub">保存在本機，點姓名即可載入</p>
+    <ul class="saved" id="saved"></ul>
+  </section>
+
+  <div class="back" id="back"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-label="選擇出生日期" aria-hidden="true">
+    <div class="grab"></div>
+    <div class="sh-head"><button id="shCancel">取消</button><b>出生日期</b><button class="ok" id="shOk">完成</button></div>
+    <input class="typed" id="typed" inputmode="numeric" maxlength="8" placeholder="可直接輸入 8 位數字，例如 19870925" autocomplete="off">
+    <div class="wheels"><div class="band"></div><div class="wheel" id="wY"></div><div class="wheel" id="wM"></div><div class="wheel" id="wD"></div></div>
+    <div class="sh-prev" id="shPrev"></div>
+  </div>
+
+  <footer>計算方式與原 Excel 表（Life Number Calculator by WPF）一致</footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const r=n=>n===0?0:((n-1)%9+9)%9+1;            // IF(x=0,0,MOD(x-1,9)+1)
+const rs=n=>((n-1)%9+9)%9+1;                     // MOD(x-1,9)+1
+
+function calc(d1,d2,m1,m2,c1,c2,y1,y2){
+  const v={};
+  v.E9=r(d1+d2); v.G9=r(m1+m2); v.I9=r(c1+c2);
+  v.K9=(y1===0&&y2===0)?5:r(y1+y2);
+  v.F10=r(v.E9+v.G9); v.J10=r(v.I9+v.K9); v.H12=r(v.F10+v.J10);
+  v.H7=rs(v.E9+v.K9+v.H12);
+  v.G13=r(v.J10+v.H12); v.I13=r(v.H12+v.F10); v.H15=r(v.G13+v.I13);
+  v.E15=r(v.G9+v.F10); v.F15=r(v.E9+v.F10); v.D15=r(v.E15+v.F15);
+  v.J15=r(v.I9+v.J10); v.K15=r(v.K9+v.J10); v.L15=r(v.J15+v.K15);
+  v.hidden=[r(v.F10*2),r(v.J10*2),r(v.H12*2)];
+  const seven=[v.E9,v.G9,v.I9,v.K9,v.F10,v.J10,v.H12];
+  v.missing=[1,2,3,4,5,6,7,8,9].filter(n=>!seven.includes(n));
+  const elOf=n=>n===5?"土":(n===1||n===6)?"金":(n===2||n===7)?"水":(n===3||n===8)?"火":(n===4||n===9)?"木":"";
+  const gen={"金":"水","水":"木","木":"火","火":"土","土":"金"};
+  const all=["E9","G9","I9","K9","F10","J10","H12","G13","I13","D15","E15","F15","H15","J15","K15","L15"].map(k=>v[k]);
+  const els=[elOf(v.H12)];
+  for(let i=0;i<4;i++) els.push(gen[els[i]]);
+  v.five=els.map(e=>({el:e,count:all.filter(n=>elOf(n)===e).length}));
+  return v;
+}
+
+/* chart layout, coordinates follow the original Excel drawing */
+const NUM={E9:[168,178],G9:[310,178],I9:[468,178],K9:[610,178],F10:[238,224],J10:[540,224],
+  H12:[390,318],G13:[310,360],I13:[468,360]};
+const CELL={D15:[97],E15:[168],F15:[239],J15:[539],K15:[610],L15:[681]};   // bottom boxes, y 412-460
+const OVAL={H7:[390,121],H15:[390,437]};
+const COMBOS=[
+  ["父基因","事業",["E9","G9","F10"]],["母基因","婚姻",["I9","K9","J10"]],["主性格","",["F10","J10","H12"]],
+  ["過程","",["F10","H12","I13"]],["過程","",["J10","H12","G13"]],["子女下屬","",["G13","I13","H15"]],
+  ["事業過程","",["E9","F10","F15"]],["事業過程","",["G9","F10","E15"]],["當下朋友","",["F15","E15","D15"]],
+  ["婚姻過程","",["I9","J10","J15"]],["婚姻過程","",["K9","J10","K15"]],["未來健康財富子媳","",["J15","K15","L15"]],
+  ["隱藏號","主性格三數 ×2",null]
+];
+const ROLES=["自身","子女／財富","事業／伴侶","官鬼／疾","父母／貴人"];
+
+/* build chart once */
+const svgEl=$("triSvg"), tri=svgEl.parentNode, nodes={};
+const star=(x,y,R)=>{let p=[];for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?R*.45:R;p.push((x+rr*Math.cos(a)).toFixed(1)+","+(y+rr*Math.sin(a)).toFixed(1));}
+  return `<polygon class="star" points="${p.join(" ")}"/>`;};
+let h="";
+// triangles first so everything else sits on top
+h+=`<polygon class="inv" points="40,164 740,164 390,382"/>`;
+h+=`<polygon class="up" points="390,252 135,398 645,398"/>`;
+h+=`<line class="stem" x1="390" y1="148" x2="390" y2="250"/><line class="stem" x1="390" y1="384" x2="390" y2="410"/>`;
+// header labels + digit pills
+[["日","DAY",131],["月","MONTH",277],["紀","CENTURY",504],["年","YEAR",650]].forEach(([c,e,x])=>{
+  h+=`<text class="lbl" x="${x}" y="66">${c}</text><text class="lbl en" x="${x}" y="86">${e}</text>`;});
+h+=`<text class="lbl b" x="390" y="78">本源夢想</text>`;
+[[60,0],[206,2],[433,4],[579,6]].forEach(([x,i])=>{
+  h+=`<rect class="pill" x="${x}" y="96" width="142" height="50" rx="12"/><line class="sep" x1="${x+71}" y1="106" x2="${x+71}" y2="136"/>`
+    +`<text class="boxd" id="dg${i}" x="${x+35.5}" y="122"></text><text class="boxd" id="dg${i+1}" x="${x+106.5}" y="122"></text>`;});
+// bottom cell groups
+[[62],[504]].forEach(([x])=>{
+  h+=`<rect class="cellg" x="${x}" y="412" width="213" height="50" rx="12"/><line class="csep" x1="${x+71}" y1="420" x2="${x+71}" y2="454"/><line class="csep" x1="${x+142}" y1="420" x2="${x+142}" y2="454"/>`;});
+h+=`<text class="lbl b" x="390" y="280">主性格</text>`;
+for(const k in OVAL){const [x,y]=OVAL[k];
+  h+=`<g data-k="${k}"><circle class="ring" cx="${x}" cy="${y}" r="27"/><circle class="bg" cx="${x}" cy="${y}" r="24"/><text class="n ringt" x="${x}" y="${y+1}"></text></g>`;}
+for(const k in NUM){const [x,y]=NUM[k];
+  h+= k==="H12"
+    ? `<g data-k="H12"><circle class="mainc" cx="${x}" cy="${y}" r="29"/><text class="n maint" x="${x}" y="${y+1}"></text></g>`
+    : `<g data-k="${k}"><circle class="bg" cx="${x}" cy="${y}" r="23"/><text class="n" x="${x}" y="${y+1}"></text></g>`;}
+for(const k in CELL){const x=CELL[k][0];
+  h+=`<g data-k="${k}"><rect class="bg" x="${x-31}" y="417" width="62" height="40" rx="9"/><text class="n" x="${x}" y="438"></text></g>`;}
+h+=star(70,176,10)+star(710,176,10)+star(390,362,10);
+svgEl.innerHTML=h;
+svgEl.querySelectorAll("g[data-k]").forEach(g=>nodes[g.dataset.k]=g);
+
+let active=-1, cur=null;
+function highlight(i){
+  active=(active===i)?-1:i;
+  Object.values(nodes).forEach(n=>n.classList.remove("hl"));
+  [...$("combos").children].forEach((li,j)=>li.classList.toggle("on",j===active));
+  if(active<0) return;
+  const ks=COMBOS[active][2]||["F10","J10","H12"];
+  ks.forEach(k=>nodes[k].classList.add("hl"));
+  const rc=tri.getBoundingClientRect();
+  if(rc.bottom<0||rc.top>innerHeight) tri.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function render(iso){
+  const [Y,M,D]=iso.split("-");
+  const g=s=>[+s[0],+s[1]];
+  const [d1,d2]=g(D),[m1,m2]=g(M),[c1,c2]=g(Y.slice(0,2)),[y1,y2]=g(Y.slice(2));
+  const v=calc(d1,d2,m1,m2,c1,c2,y1,y2); cur={iso,v};
+
+  $("dateBig").innerHTML=`${+Y}<span>年</span>${+M}<span>月</span>${+D}<span>日</span>`;
+
+  for(const k in nodes) nodes[k].querySelector(".n").textContent=v[k];
+  (D+M+Y).split("").forEach((c,i)=>$("dg"+i).textContent=c);
+
+  $("combos").innerHTML=COMBOS.map(([nm,sub,ks],i)=>{
+    const ds=ks?ks.map(k=>v[k]):v.hidden;
+    return `<li data-i="${i}"><span class="no">${i+1}</span><span class="nm">${nm}${sub?`<em>${sub}</em>`:""}</span>
+      <span class="digits">${ds.map(n=>`<b>${n}</b>`).join("")}</span></li>`;
+  }).join("");
+  if(active>=0){const a=active;active=-1;highlight(a);}
+
+  $("nine").innerHTML=[1,2,3,4,5,6,7,8,9].map(n=>`<b class="${v.missing.includes(n)?"miss":""}">${n}</b>`).join("");
+  $("missNote").innerHTML=v.missing.length?`缺 <b>${v.missing.join("　")}</b>`:"沒有缺失數字";
+
+  $("five").innerHTML=v.five.map((f,i)=>`<div><div class="el">${f.el}</div><div class="role">${ROLES[i]}</div>
+    <div class="cnt">${f.count}</div><div class="dots">${"<i></i>".repeat(f.count)}</div></div>`).join("");
+}
+
+/* storage (best effort) */
+const store={get(k,d){try{const s=localStorage.getItem(k);return s?JSON.parse(s):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+function renderSaved(){
+  const list=store.get("ln.saved",[]);
+  $("saved").innerHTML=list.length?list.map((p,i)=>{
+    const [Y,M,D]=p.iso.split("-");
+    return `<li><span class="main-n">${p.main}</span><span class="who" data-i="${i}"><b>${esc(p.name)}</b>
+      <span>${+Y} 年 ${+M} 月 ${+D} 日</span></span><button class="pdf" data-pdf="${i}">PDF</button><button class="del" data-del="${i}">刪除</button></li>`;
+  }).join(""):`<li class="empty">還沒有記錄。輸入姓名後點「保存」。</li>`;
+}
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+$("dob").addEventListener("change",e=>{
+  const val=e.target.value; if(!/^\d{4}-\d{2}-\d{2}$/.test(val)) return;
+  render(val); store.set("ln.last",val);
+});
+$("combos").addEventListener("click",e=>{const li=e.target.closest("li"); if(li) highlight(+li.dataset.i);});
+$("saveBtn").addEventListener("click",()=>{
+  if(!cur) return;
+  const name=$("name").value.trim()||"未命名";
+  const list=store.get("ln.saved",[]).filter(p=>!(p.name===name&&p.iso===cur.iso));
+  list.unshift({name,iso:cur.iso,main:cur.v.H12}); store.set("ln.saved",list.slice(0,100));
+  $("name").value=name==="未命名"?"":name; $("name").blur(); renderSaved();
+});
+
+/* PDF: print the reading. iOS/desktop use the print sheet (Save as PDF); the Android app passes it to the system print service */
+function exportPdf(){
+  if(!cur) return;
+  const name=$("name").value.trim(), [Y,M,D]=cur.iso.split("-");
+  const date=`${+Y} 年 ${+M} 月 ${+D} 日`, today=new Date();
+  $("printHead").innerHTML=`<div><h1>生命數字 LIFE NUMBER</h1><div class="who">${name?`<b>${esc(name)}</b>`:""}${date}</div></div>
+    <small>主性格 ${cur.v.H12}　本源夢想 ${cur.v.H7}<br>製表日期 ${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}</small>`;
+  const title=`生命數字-${name||"未命名"}-${Y}${M}${D}`, old=document.title;
+  document.title=title;
+  const restore=()=>{ document.title=old; window.removeEventListener("afterprint",restore); };
+  window.addEventListener("afterprint",restore);
+  if(window.AndroidPrint) AndroidPrint.print(title); else window.print();
+  setTimeout(()=>{ if(window.AndroidPrint) document.title=old; },3000);
+}
+$("pdfBtn").addEventListener("click",exportPdf);
+$("saved").addEventListener("click",e=>{
+  const list=store.get("ln.saved",[]);
+  const del=e.target.closest("[data-del]");
+  if(del){ if(confirm("刪除「"+list[+del.dataset.del].name+"」？")){list.splice(+del.dataset.del,1);store.set("ln.saved",list);renderSaved();} return; }
+  const pdf=e.target.closest("[data-pdf]");
+  const who=pdf||e.target.closest(".who"); if(!who) return;
+  const p=list[+(pdf?pdf.dataset.pdf:who.dataset.i)];
+  $("dob").value=p.iso; $("name").value=p.name==="未命名"?"":p.name; render(p.iso); store.set("ln.last",p.iso);
+  if(pdf){ exportPdf(); return; }
+  scrollTo({top:0,behavior:"smooth"});
+});
+
+/* date sheet with wheels */
+const IH=40, wY=$("wY"), wM=$("wM"), wD=$("wD");
+const YEARS=[]; for(let y=1900;y<=2099;y++) YEARS.push(y);
+const dim=(y,m)=>new Date(y,m,0).getDate();
+let pick={y:1990,m:1,d:1};
+const pad=n=>String(n).padStart(2,"0");
+function fillWheel(el,vals,unit){ el.innerHTML=vals.map(v=>`<div data-v="${v}">${v}<small>${unit}</small></div>`).join(""); }
+fillWheel(wY,YEARS,"年"); fillWheel(wM,[1,2,3,4,5,6,7,8,9,10,11,12],"月");
+function fillDays(){ const n=dim(pick.y,pick.m); if(wD.children.length!==n) fillWheel(wD,Array.from({length:n},(_,i)=>i+1),"日"); if(pick.d>n) pick.d=n; }
+function mark(el,i){ [...el.children].forEach((c,j)=>c.classList.toggle("sel",j===i)); }
+// while the code itself is scrolling a wheel, ignore its scroll events so passing values are not picked
+const lock={};
+function scrollToIdx(el,i,smooth){ lock[el.id]={i,until:Date.now()+1000}; el.scrollTo({top:i*IH,behavior:smooth?"smooth":"auto"}); mark(el,i); }
+function syncWheels(smooth){ fillDays(); scrollToIdx(wY,pick.y-1900,smooth); scrollToIdx(wM,pick.m-1,smooth); scrollToIdx(wD,pick.d-1,smooth); preview(); }
+function preview(){
+  const iso=`${pick.y}-${pad(pick.m)}-${pad(pick.d)}`, dg=(pad(pick.d)+pad(pick.m)+pick.y).split("").map(Number), v=calc(...dg);
+  $("shPrev").innerHTML=`<span>主性格<b>${v.H12}</b></span><span>本源夢想<b>${v.H7}</b></span>`;
+  return iso;
+}
+function onWheel(el,key){
+  let t; el.addEventListener("scroll",()=>{
+    const L=lock[el.id];
+    if(L){ if(Date.now()<L.until&&Math.abs(el.scrollTop-L.i*IH)>1) return; delete lock[el.id]; return; }
+    const i=Math.max(0,Math.min(el.children.length-1,Math.round(el.scrollTop/IH))); mark(el,i);
+    clearTimeout(t); t=setTimeout(()=>{
+      const val=+el.children[i].dataset.v; if(pick[key]===val) return;
+      pick[key]=val; $("typed").value="";
+      if(key!=="d"){ const before=wD.children.length; fillDays(); if(wD.children.length!==before) scrollToIdx(wD,pick.d-1,false); }
+      preview();
+    },90);
+  },{passive:true});
+  el.addEventListener("click",e=>{
+    const it=e.target.closest("[data-v]"); if(!it) return;
+    pick[key]=+it.dataset.v; $("typed").value=""; scrollToIdx(el,[...el.children].indexOf(it),true);
+    if(key!=="d"){ fillDays(); scrollToIdx(wD,pick.d-1,false); }
+    preview();
+  });
+}
+onWheel(wY,"y"); onWheel(wM,"m"); onWheel(wD,"d");
+$("typed").addEventListener("input",e=>{
+  const t=e.target.value.replace(/\D/g,"").slice(0,8); e.target.value=t; e.target.style.borderColor="";
+  if(t.length!==8) return;
+  const y=+t.slice(0,4), m=+t.slice(4,6), d=+t.slice(6,8);
+  if(y<1900||y>2099||m<1||m>12||d<1||d>dim(y,m)){ e.target.style.borderColor="var(--accent)"; return; }
+  pick={y,m,d}; syncWheels(true);
+});
+function openSheet(){
+  const [y,m,d]=$("dob").value.split("-").map(Number); pick={y,m,d}; $("typed").value=""; $("typed").style.borderColor="";
+  $("back").classList.add("open"); $("sheet").classList.add("open"); $("sheet").setAttribute("aria-hidden","false");
+  requestAnimationFrame(()=>syncWheels(false));
+}
+function closeSheet(){ $("back").classList.remove("open"); $("sheet").classList.remove("open"); $("sheet").setAttribute("aria-hidden","true"); $("typed").blur(); }
+$("openDate").addEventListener("click",openSheet);
+// Android app back button: close the sheet if it is open, else report false so the app exits
+window.__back=()=>{ if($("sheet").classList.contains("open")){ closeSheet(); return true; } return false; };
+$("back").addEventListener("click",closeSheet); $("shCancel").addEventListener("click",closeSheet);
+$("shOk").addEventListener("click",()=>{ const iso=preview(); $("dob").value=iso; $("dob").dispatchEvent(new Event("change")); closeSheet(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeSheet(); });
+
+const start=store.get("ln.last","1990-01-01");
+$("dob").value=start; render(start); renderSaved();
+
+const standalone=navigator.standalone||matchMedia("(display-mode: standalone)").matches;
+const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+if(ios&&!standalone&&!store.get("ln.installSeen",false)){ $("install").classList.add("show"); store.set("ln.installSeen",true); }
+
+if("serviceWorker" in navigator&&location.protocol!=="file:") navigator.serviceWorker.register("sw.js").catch(()=>{});
+window.__calc=calc;
+})();
+</script>
+</body>
+</html>
