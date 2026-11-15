@@ -176,9 +176,12 @@ footer{text-align:center;font-size:11px;color:var(--ink3);margin-top:20px;letter
     --accent:#b23a2b; --accent-soft:#f6e3de; --bar:#1f5fae; --green:#1e8a55; --blue:#5a82cf; --tri-dark:#3a4a63;
     --num-blue:#1f4f8f; --gold:#c79a3a; --gold-ink:#8a6416; --tri-blue-fill:rgba(90,130,207,.08); --tri-dark-fill:rgba(58,74,99,.05); }
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  html,body{background:#fff}
-  body{padding:0}
-  main{max-width:none}
+  html,body{background:#fff;height:auto!important;min-height:0!important}
+  body{padding:0;margin:0}
+  /* iOS Safari added an empty 2nd page from leftover document height: keep the report one
+     block shorter than any paper size, and nothing after it */
+  main{max-width:none;max-height:250mm;overflow:hidden;break-after:avoid;page-break-after:avoid}
+  main>:last-child,.grid2{margin-bottom:0!important}
   header,.install,footer,.sheet,.back,.sub,#dateCard,#savedCard,.save,.btn2,.datebtn{display:none!important}
   .print-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding:0 2px 8px;margin-bottom:10px}
   .print-head h1{font-family:var(--serif);font-size:22px;margin:0;letter-spacing:.06em}
@@ -426,7 +429,13 @@ function exportPdf(){
   document.title=title;
   const restore=()=>{ document.title=old; window.removeEventListener("afterprint",restore); };
   window.addEventListener("afterprint",restore);
-  if(window.AndroidPrint) AndroidPrint.print(title); else window.print();
+  // with the name box still focused, the on-screen keyboard squeezes the page and iOS prints an
+  // extra blank page, so close the keyboard and go to the top before printing
+  const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName);
+  if(typing) document.activeElement.blur();
+  scrollTo(0,0);
+  const go=()=>{ if(window.AndroidPrint) AndroidPrint.print(title); else window.print(); };
+  if(typing) setTimeout(go,450); else go();
   setTimeout(()=>{ if(window.AndroidPrint) document.title=old; },3000);
 }
 $("pdfBtn").addEventListener("click",exportPdf);
