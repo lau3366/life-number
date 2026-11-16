@@ -1,4 +1,4 @@
-const CACHE = "life-number-v13";
+const CACHE = "life-number-v14";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-512.png", "install.html"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: "reload" }))))); self.skipWaiting(); });
 self.addEventListener("activate", e => {

@@ -583,7 +583,8 @@ $("saved").addEventListener("click",e=>{
 
 /* date sheet with wheels */
 const IH=40, wY=$("wY"), wM=$("wM"), wD=$("wD");
-const YEARS=[]; for(let y=1900;y<=2099;y++) YEARS.push(y);
+const Y_MIN=1900, Y_MAX=4999;
+const YEARS=[]; for(let y=Y_MIN;y<=Y_MAX;y++) YEARS.push(y);
 const dim=(y,m)=>new Date(y,m,0).getDate();
 let pick={y:1990,m:1,d:1};
 const pad=n=>String(n).padStart(2,"0");
@@ -594,7 +595,7 @@ function mark(el,i){ [...el.children].forEach((c,j)=>c.classList.toggle("sel",j=
 // while the code itself is scrolling a wheel, ignore its scroll events so passing values are not picked
 const lock={};
 function scrollToIdx(el,i,smooth){ lock[el.id]={i,until:Date.now()+1000}; el.scrollTo({top:i*IH,behavior:smooth?"smooth":"auto"}); mark(el,i); }
-function syncWheels(smooth){ fillDays(); scrollToIdx(wY,pick.y-1900,smooth); scrollToIdx(wM,pick.m-1,smooth); scrollToIdx(wD,pick.d-1,smooth); preview(); }
+function syncWheels(smooth){ fillDays(); scrollToIdx(wY,pick.y-Y_MIN,smooth); scrollToIdx(wM,pick.m-1,smooth); scrollToIdx(wD,pick.d-1,smooth); preview(); }
 function preview(){
   const iso=`${pick.y}-${pad(pick.m)}-${pad(pick.d)}`, dg=(pad(pick.d)+pad(pick.m)+pick.y).split("").map(Number), v=calc(...dg);
   $("shPrev").innerHTML=`<span>主性格<b>${v.H12}</b></span><span>本源夢想<b>${v.H7}</b></span>`;
@@ -624,7 +625,7 @@ $("typed").addEventListener("input",e=>{
   const t=e.target.value.replace(/\D/g,"").slice(0,8); e.target.value=t; e.target.style.borderColor="";
   if(t.length!==8) return;
   const y=+t.slice(0,4), m=+t.slice(4,6), d=+t.slice(6,8);
-  if(y<1900||y>2099||m<1||m>12||d<1||d>dim(y,m)){ e.target.style.borderColor="var(--accent)"; return; }
+  if(y<Y_MIN||y>Y_MAX||m<1||m>12||d<1||d>dim(y,m)){ e.target.style.borderColor="var(--accent)"; return; }
   pick={y,m,d}; syncWheels(true);
 });
 function openSheet(){
